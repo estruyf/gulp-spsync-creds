@@ -1,0 +1,42 @@
+{
+  "name": "gulp-spsync-creds",
+  "version": "1.0.0",
+  "description": "Gulp plugin that syncs with a library in SharePoint Online and on-premises",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/estruyf/gulp-spsync-creds.git"
+  },
+  "keywords": [
+    "gulp",
+    "sharepoint",
+    "sync",
+    "file",
+    "tool",
+    "office365"
+  ],
+  "dependencies": {
+    "through2": "^2.0.0",
+    "gulp-util": "^3.0.7",
+    "util": "^0.10.3",
+    "sp-request": "^1.1.0"
+  },
+  "author": "Elio Struyf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/estruyf/gulp-spsync-creds/issues"
+  },
+  "homepage": "https://github.com/estruyf/gulp-spsync-creds",
+  "maintainers": [
+    {
+      "name": "Elio Struyf",
+      "email": "info@estruyf.be"
+    }
+  ],
+  "devDependencies": {
+    
+  }
+}
