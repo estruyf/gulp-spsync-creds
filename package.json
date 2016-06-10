@@ -1,10 +1,12 @@
 {
   "name": "gulp-spsync-creds",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Gulp plugin that syncs with a library in SharePoint Online and on-premises",
-  "main": "index.js",
+  "main": "./release/index.js",
   "scripts": {
-    "test": "test"
+    "build": "npm install && gulp build",
+    "test": "mocha tests/test.js",
+    "prepublish": "gulp build"
   },
   "repository": {
     "type": "git",
@@ -16,14 +18,9 @@
     "sync",
     "file",
     "tool",
-    "office365"
+    "office365",
+    "on-premises"
   ],
-  "dependencies": {
-    "through2": "^2.0.0",
-    "gulp-util": "^3.0.7",
-    "util": "^0.10.3",
-    "sp-request": "^1.1.0"
-  },
   "author": "Elio Struyf",
   "license": "MIT",
   "bugs": {
@@ -36,7 +33,22 @@
       "email": "info@estruyf.be"
     }
   ],
+  "dependencies": {
+    "bluebird": "^3.4.0",
+    "gulp-util": "^3.0.7",
+    "sp-request": "^1.1.0",
+    "through2": "^2.0.0",
+    "util": "^0.10.3"
+  },
   "devDependencies": {
-    
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.13.0",
+    "merge2": "^1.0.2",
+    "mocha": "^2.5.3",
+    "tslint": "^3.8.1",
+    "typings": "^1.0.4",
+    "vinyl": "^1.1.1"
   }
 }

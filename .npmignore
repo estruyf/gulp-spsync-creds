@@ -1,1 +1,9 @@
+.vscode
 node_modules
+/tests
+/src
+/typings
+gulpfile.js
+typings.json
+tsconfig.json
+*.tgz
