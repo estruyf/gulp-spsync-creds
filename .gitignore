@@ -2,3 +2,4 @@ node_modules
 src/**/*.js.map
 src/**/*.js
 *.tgz
+tests/local-test.js

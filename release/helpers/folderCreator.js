@@ -6,6 +6,7 @@ var util = require('util');
 var defer_1 = require('./defer');
 var fileHelper = require('./fileHelper');
 var fileHlp = new fileHelper.FileHelper();
+var processedLibs = [];
 var FolderCreator = (function () {
     function FolderCreator(options, crntSpr, crntDigest, crntFileInfo) {
         this.digest = crntDigest;
@@ -19,6 +20,7 @@ var FolderCreator = (function () {
     FolderCreator.prototype.checkFoldersAndCreateIfNotExist = function () {
         var _this = this;
         var library = this.fileInfo.library;
+        // Convert library location to URL path
         if (path.sep == "\\") {
             library = library.replace(/\\/g, "/");
         }
@@ -29,6 +31,16 @@ var FolderCreator = (function () {
             proms.push(_this.checkFolderExists(val));
         });
         return new Promise(function (resolve, reject) {
+            // Cache checks
+            if (_this.config.cache) {
+                if (_this.checkCachedLocation(library)) {
+                    if (_this.config.verbose) {
+                        gutil.log('INFO: Library already processed', library);
+                    }
+                    resolve(null);
+                    return;
+                }
+            }
             Promise.all(proms).then(function (data) {
                 // Get all folder indexes that do not exist
                 var erroredIndexes = data.map(function (val, index) {
@@ -58,6 +70,22 @@ var FolderCreator = (function () {
         });
     };
     /*
+     * Cache library locations
+     */
+    FolderCreator.prototype.cacheLocation = function (folderLocation) {
+        if (this.config.cache) {
+            if (processedLibs.indexOf(folderLocation) === -1) {
+                processedLibs.push(folderLocation);
+            }
+        }
+    };
+    FolderCreator.prototype.checkCachedLocation = function (folderLocation) {
+        if (processedLibs.indexOf(folderLocation) !== -1) {
+            return true;
+        }
+        return false;
+    };
+    /*
      * Check which folders exists based on the file path
      */
     FolderCreator.prototype.checkFolderExists = function (folderName) {
@@ -81,6 +109,8 @@ var FolderCreator = (function () {
                 if (_this.config.verbose) {
                     gutil.log('Folder ' + folderName + ' exists');
                 }
+                // Temp cache the processed folder
+                _this.cacheLocation(folderName);
                 resolve(success);
             })
                 .catch(function (err) {
@@ -117,6 +147,11 @@ var FolderCreator = (function () {
             // Create new folder				
             this.spr.post(this.config.site + setFolder, opts)
                 .then(function (res) {
+                // Temp cache the processed folder
+                _this.cacheLocation(pathArray[0]);
+                if (_this.config.verbose) {
+                    gutil.log('INFO: Folder created:', pathArray[0]);
+                }
                 return _this.createPathRecursive(pathArray.slice(1, pathArray.length), deferred);
             })
                 .catch(function (err) {

@@ -15,7 +15,8 @@ function sync(args) {
         files_metadata: [],
         publish: false,
         file: null,
-        content: null
+        content: null,
+        cache: false
     };
     // Check arguments
     if (!args) {
@@ -41,6 +42,7 @@ function sync(args) {
         options.update_metadata = args.update_metadata || options.update_metadata;
         options.files_metadata = args.files_metadata || options.files_metadata;
         options.publish = args.publish || options.publish;
+        options.cache = args.cache || options.cache;
     }
     var fileSync = new fileSyncHelper_1.FileSync(options);
     return through.obj(function (file, enc, cb) {

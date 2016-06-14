@@ -83,7 +83,7 @@ var deleteFileUrl = `${config.site}/_api/web/GetFileByServerRelativeUrl(@FileUrl
 describe('gulp-spsync-creds: file upload tests', function () {
     var spr = sprequest.create({ username: config.username, password: config.password });
 
-    beforeEach('delete file and folders', function (done) {
+    before('delete file and folders', function (done) {
         console.log('Delete file and folders before running tests');
         this.timeout(10 * 1000);      
 
@@ -96,6 +96,21 @@ describe('gulp-spsync-creds: file upload tests', function () {
                 .catch(function (err) {
                     return deleteFolder(spr, digest, folderUrl);
                 });
+            })
+            .then(data => {
+                done();
+            })
+            .catch(done);
+        }
+    );
+
+    beforeEach('delete file', function (done) {
+        console.log('Delete file before running next test');
+        this.timeout(10 * 1000);      
+
+        spr.requestDigest(config.site)
+            .then(digest => {
+                return deleteFile(spr, digest, deleteFile);
             })
             .then(data => {
                 done();
@@ -133,7 +148,31 @@ describe('gulp-spsync-creds: file upload tests', function () {
             .pipe(spsync({
                 site: config.site,
                 username: config.username,
-                password: config.password
+                password: config.password,
+                cache: true
+            }))
+            .on('finish', function () {
+                spr.get(retrieveFileUrl, {
+                    encoding: null
+                })
+                .then(data => {
+                    expect(fileContent.equals(data.body)).is.true;
+                    done();
+                })
+                .catch(done);
+            });
+    });
+
+    it('Same as previous but no folder creation', function (done) {
+        this.timeout(10 * 1000);
+        var fileContent = fs.readFileSync(fileLoc);
+
+        gulp.src(fileLoc, { base: baseLoc })
+            .pipe(spsync({
+                site: config.site,
+                username: config.username,
+                password: config.password,
+                cache: true
             }))
             .on('finish', function () {
                 spr.get(retrieveFileUrl, {
@@ -155,7 +194,8 @@ describe('gulp-spsync-creds: file upload tests', function () {
                 username: config.username,
                 password: config.password,
                 files_metadata: config.fileMetadata,
-                update_metadata: true
+                update_metadata: true,
+                cache: true
             }))
             .on('finish', function () {
                 spr.get(metadataFileUrl, {

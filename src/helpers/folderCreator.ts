@@ -10,6 +10,7 @@ import {defer, IDeferred} from './defer';
 
 import * as fileHelper from './fileHelper';
 let fileHlp = new fileHelper.FileHelper();
+let processedLibs = [];
 
 export class FolderCreator {
     digest: string;
@@ -29,11 +30,10 @@ export class FolderCreator {
 	 */
     checkFoldersAndCreateIfNotExist() {
 		let library = this.fileInfo.library;
-		
+		// Convert library location to URL path
 		if(path.sep == "\\"){
 			library = library.replace(/\\/g, "/")
 		}
-
         // Get all folders
         let foldersArray: string[] = fileHlp.getFolderPathsArray(library);
 		let proms = [];
@@ -41,6 +41,17 @@ export class FolderCreator {
 			proms.push(this.checkFolderExists(val));
 		});
         return new Promise<any>((resolve, reject) => {
+			// Cache checks
+			if (this.config.cache) {
+				if (this.checkCachedLocation(library)) {
+					if (this.config.verbose) {
+						gutil.log('INFO: Library already processed', library);
+					}
+					resolve(null);
+					return;
+				}
+			}
+			
             Promise.all(proms).then(data => {
 				// Get all folder indexes that do not exist
                 var erroredIndexes = data.map((val, index) => {
@@ -71,9 +82,26 @@ export class FolderCreator {
     }
 
 	/*
+	 * Cache library locations
+	 */
+	cacheLocation (folderLocation: string): void {
+		if (this.config.cache) {
+			if (processedLibs.indexOf(folderLocation) === -1) {
+				processedLibs.push(folderLocation);
+			}
+		}
+	}
+	checkCachedLocation (folderLocation: string): boolean {
+		if (processedLibs.indexOf(folderLocation) !== -1) {
+			return true;
+		}
+		return false;
+	}
+
+	/*
 	 * Check which folders exists based on the file path
 	 */
-    checkFolderExists (folderName) {
+    checkFolderExists (folderName: string) {
 		let getFolderUrl = util.format("/_api/web/GetFolderByServerRelativeUrl(@FolderName)?@FolderName='%s'", encodeURIComponent(folderName));
         let header = {
 			headers: {
@@ -91,9 +119,11 @@ export class FolderCreator {
         return new Promise<any>((resolve, reject) => {
 			this.spr.get(endPoint, header)
                 .then(success => {
-                    if(this.config.verbose){
+                    if(this.config.verbose) {
                         gutil.log('Folder ' + folderName + ' exists');
                     }
+					// Temp cache the processed folder
+					this.cacheLocation(folderName);
                     resolve(success);
                 })
 			    .catch(err => {
@@ -133,6 +163,11 @@ export class FolderCreator {
 			// Create new folder				
 			this.spr.post(this.config.site + setFolder, opts)
 				.then(res => {
+					// Temp cache the processed folder
+					this.cacheLocation(pathArray[0]);
+					if (this.config.verbose) {
+						gutil.log('INFO: Folder created:', pathArray[0]);
+					}
 					return this.createPathRecursive(pathArray.slice(1, pathArray.length), deferred);
 				})
 				.catch(err => {

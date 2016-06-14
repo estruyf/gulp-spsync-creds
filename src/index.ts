@@ -20,7 +20,8 @@ export function sync (args: ISettings) {
 		files_metadata: [],
 		publish: false,
 		file: null,
-		content: null
+		content: null,
+		cache: false
 	}
 
     // Check arguments
@@ -48,11 +49,12 @@ export function sync (args: ISettings) {
 		options.update_metadata = args.update_metadata || options.update_metadata;
 		options.files_metadata = args.files_metadata || options.files_metadata;
 		options.publish = args.publish || options.publish;
+		options.cache = args.cache || options.cache;
 	}
 
 	let fileSync = new FileSync(options);
 
-    return through.obj(function(file, enc, cb) {
+    return through.obj(function(file, enc, cb) {		
 		var fileDone = function (parameter) {
 			cb(null, file);
 		}

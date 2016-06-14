@@ -7,6 +7,7 @@ export interface ISettings {
     startFolder: string,
     verbose: boolean,
     update_metadata: boolean,
+    cache: boolean,
     publish: boolean,
     files_metadata: any,
     file: File,
