@@ -1,6 +1,6 @@
 {
   "name": "gulp-spsync-creds",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Gulp plugin that syncs with a library in SharePoint Online and on-premises",
   "main": "./release/index.js",
   "scripts": {
@@ -36,6 +36,7 @@
   "dependencies": {
     "bluebird": "^3.4.0",
     "gulp-util": "^3.0.7",
+    "moment": "^2.13.0",
     "sp-request": "^1.1.0",
     "through2": "^2.0.0",
     "util": "^0.10.3"
@@ -48,7 +49,7 @@
     "merge2": "^1.0.2",
     "mocha": "^2.5.3",
     "tslint": "^3.8.1",
-    "typings": "^1.0.4",
+    "typings": "^1.1.0",
     "vinyl": "^1.1.1"
   }
 }

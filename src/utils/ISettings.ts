@@ -1,4 +1,5 @@
 import File = require('vinyl');
+import * as moment from 'moment';
 
 export interface ISettings {
     username: string,
@@ -12,4 +13,9 @@ export interface ISettings {
     files_metadata: any,
     file: File,
     content: Buffer
+}
+
+export interface IDigest {
+    digest: string,
+    retrieved: moment.Moment
 }

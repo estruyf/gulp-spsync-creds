@@ -2,25 +2,28 @@ import * as sprequest from 'sp-request';
 import * as Promise from 'bluebird';
 import * as gutil from 'gulp-util';
 import * as path from 'path';
+import * as moment from 'moment';
 
 import {IFileInfo} from './../utils/IFileInfo';
-import {ISettings} from './../utils/ISettings';
+import {ISettings, IDigest} from './../utils/ISettings';
 
 import {defer, IDeferred} from './defer';
 import {FolderCreator} from './FolderCreator';
 
 import * as fileHelper from './fileHelper';
 let fileHlp = new fileHelper.FileHelper();
+let digestVal: IDigest = {
+	digest: null,
+	retrieved: null
+}
 
 export class FileSync {
     config: ISettings;
-    digest: string;
     spr: sprequest.ISPRequest;
 	folderCreator: FolderCreator;
 	fileInfo: IFileInfo;
 
     constructor(options: ISettings) {
-        this.digest = null;
         this.config = options;
         this.spr = sprequest.create({ username: options.username, password: options.password });
     }
@@ -30,14 +33,22 @@ export class FileSync {
 	 */
     public init(): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
-			if (this.digest === null) {
+			if (!this.CheckDigestLifespan()) {
 				this.spr.requestDigest(this.config.site).then(result => {
-					this.digest = result;
+					// Store digest
+					digestVal.digest = result;
+					digestVal.retrieved = moment();
+					if (this.config.verbose) {
+						gutil.log('INFO: New digest received');
+					}
 					this.start().then(() => {
 						resolve(null);
 					});
 				});
 			} else {
+				if (this.config.verbose) {
+					gutil.log('INFO: Use cached digest value');
+				}
 				this.start().then(() => {
 					resolve(null);
 				});
@@ -46,12 +57,26 @@ export class FileSync {
     }
 
 	/*
+	 * Check the lifespan of the digest value
+	 */
+	CheckDigestLifespan(): boolean {
+		if (digestVal.digest !== null && digestVal.retrieved !== null) {
+			let now = moment();
+			// Use the cached digest value (expires by default after 30 minutes)
+			if (now.diff(digestVal.retrieved, 'minutes') < 25) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/*
 	 * Start uploading a file
 	 */
 	private start(): Promise<any> {
 		// Get the file info
 		this.fileInfo = fileHlp.getFileContext(this.config);
-		this.folderCreator = new FolderCreator(this.config, this.spr, this.digest, this.fileInfo);
+		this.folderCreator = new FolderCreator(this.config, this.spr, digestVal.digest, this.fileInfo);
 		return new Promise<any>((resolve, reject) => {
 			// Create the required folders
 			this.folderCreator.checkFoldersAndCreateIfNotExist()
@@ -84,7 +109,7 @@ export class FileSync {
 	private upload(): Promise<any> {
 		let headers = {
 			"headers":{
-				"X-RequestDigest": this.digest
+				"X-RequestDigest": digestVal.digest
 			},
 			"body": this.config.content,
 			"json": false
@@ -132,7 +157,7 @@ export class FileSync {
 							"Accept":"application/json;odata=verbose",
 							"X-HTTP-Method": "MERGE",
 							"If-Match": "*",
-							"X-RequestDigest": this.digest
+							"X-RequestDigest": digestVal.digest
 						},
 						body: metadata
 					};
@@ -188,7 +213,7 @@ export class FileSync {
 			let header = {
 				"headers":{
 					"content-type":"application/json;odata=verbose",
-					"X-RequestDigest": this.digest
+					"X-RequestDigest": digestVal.digest
 				}
 			};
 			this.spr.post(
@@ -217,7 +242,7 @@ export class FileSync {
 		let header = {
 			"headers":{
 				"content-type":"application/json;odata=verbose",
-				"X-RequestDigest": this.digest
+				"X-RequestDigest": digestVal.digest
 			}
 		};
 		this.spr.post(

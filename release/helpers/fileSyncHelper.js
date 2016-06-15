@@ -2,13 +2,17 @@
 var sprequest = require('sp-request');
 var Promise = require('bluebird');
 var gutil = require('gulp-util');
+var moment = require('moment');
 var defer_1 = require('./defer');
 var FolderCreator_1 = require('./FolderCreator');
 var fileHelper = require('./fileHelper');
 var fileHlp = new fileHelper.FileHelper();
+var digestVal = {
+    digest: null,
+    retrieved: null
+};
 var FileSync = (function () {
     function FileSync(options) {
-        this.digest = null;
         this.config = options;
         this.spr = sprequest.create({ username: options.username, password: options.password });
     }
@@ -18,20 +22,41 @@ var FileSync = (function () {
     FileSync.prototype.init = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            if (_this.digest === null) {
+            if (!_this.CheckDigestLifespan()) {
                 _this.spr.requestDigest(_this.config.site).then(function (result) {
-                    _this.digest = result;
+                    // Store digest
+                    digestVal.digest = result;
+                    digestVal.retrieved = moment();
+                    if (_this.config.verbose) {
+                        gutil.log('INFO: New digest received');
+                    }
                     _this.start().then(function () {
                         resolve(null);
                     });
                 });
             }
             else {
+                if (_this.config.verbose) {
+                    gutil.log('INFO: Use cached digest value');
+                }
                 _this.start().then(function () {
                     resolve(null);
                 });
             }
         });
+    };
+    /*
+     * Check the lifespan of the digest value
+     */
+    FileSync.prototype.CheckDigestLifespan = function () {
+        if (digestVal.digest !== null && digestVal.retrieved !== null) {
+            var now = moment();
+            // Use the cached digest value (expires by default after 30 minutes)
+            if (now.diff(digestVal.retrieved, 'minutes') < 25) {
+                return true;
+            }
+        }
+        return false;
     };
     /*
      * Start uploading a file
@@ -40,7 +65,7 @@ var FileSync = (function () {
         var _this = this;
         // Get the file info
         this.fileInfo = fileHlp.getFileContext(this.config);
-        this.folderCreator = new FolderCreator_1.FolderCreator(this.config, this.spr, this.digest, this.fileInfo);
+        this.folderCreator = new FolderCreator_1.FolderCreator(this.config, this.spr, digestVal.digest, this.fileInfo);
         return new Promise(function (resolve, reject) {
             // Create the required folders
             _this.folderCreator.checkFoldersAndCreateIfNotExist()
@@ -72,7 +97,7 @@ var FileSync = (function () {
         var _this = this;
         var headers = {
             "headers": {
-                "X-RequestDigest": this.digest
+                "X-RequestDigest": digestVal.digest
             },
             "body": this.config.content,
             "json": false
@@ -116,7 +141,7 @@ var FileSync = (function () {
                             "Accept": "application/json;odata=verbose",
                             "X-HTTP-Method": "MERGE",
                             "If-Match": "*",
-                            "X-RequestDigest": _this.digest
+                            "X-RequestDigest": digestVal.digest
                         },
                         body: metadata
                     };
@@ -171,7 +196,7 @@ var FileSync = (function () {
             var header = {
                 "headers": {
                     "content-type": "application/json;odata=verbose",
-                    "X-RequestDigest": _this.digest
+                    "X-RequestDigest": digestVal.digest
                 }
             };
             _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files('" + _this.fileInfo.filename + "')/CheckOut()", header)
@@ -195,7 +220,7 @@ var FileSync = (function () {
         var header = {
             "headers": {
                 "content-type": "application/json;odata=verbose",
-                "X-RequestDigest": this.digest
+                "X-RequestDigest": digestVal.digest
             }
         };
         this.spr.post(this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Files('" + this.fileInfo.filename + "')/CheckIn(comment='Checked in via GULP', checkintype=" + type + ")", header).then(function (result) {
