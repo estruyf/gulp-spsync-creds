@@ -19,18 +19,12 @@ var FolderCreator = (function () {
      */
     FolderCreator.prototype.checkFoldersAndCreateIfNotExist = function () {
         var _this = this;
-        var library = this.fileInfo.library;
-        // Convert library location to URL path
-        if (path.sep == "\\") {
-            library = library.replace(/\\/g, "/");
-        }
-        // Get all folders
-        var foldersArray = fileHlp.getFolderPathsArray(library);
-        var proms = [];
-        foldersArray.forEach(function (val) {
-            proms.push(_this.checkFolderExists(val));
-        });
         return new Promise(function (resolve, reject) {
+            var library = _this.fileInfo.library;
+            // Convert library location to URL path
+            if (path.sep == "\\") {
+                library = library.replace(/\\/g, "/");
+            }
             // Cache checks
             if (_this.config.cache) {
                 if (_this.checkCachedLocation(library)) {
@@ -41,6 +35,12 @@ var FolderCreator = (function () {
                     return;
                 }
             }
+            // Get all folders
+            var foldersArray = fileHlp.getFolderPathsArray(library);
+            var proms = [];
+            foldersArray.forEach(function (val) {
+                proms.push(_this.checkFolderExists(val));
+            });
             Promise.all(proms).then(function (data) {
                 // Get all folder indexes that do not exist
                 var erroredIndexes = data.map(function (val, index) {
@@ -101,13 +101,13 @@ var FolderCreator = (function () {
         };
         var endPoint = this.config.site + getFolderUrl;
         if (this.config.verbose) {
-            gutil.log("Checking folder exists " + endPoint);
+            gutil.log("INFO: Checking folder exists " + endPoint);
         }
         return new Promise(function (resolve, reject) {
             _this.spr.get(endPoint, header)
                 .then(function (success) {
                 if (_this.config.verbose) {
-                    gutil.log('Folder ' + folderName + ' exists');
+                    gutil.log('INFO: Folder ' + folderName + ' exists');
                 }
                 // Temp cache the processed folder
                 _this.cacheLocation(folderName);
@@ -130,7 +130,7 @@ var FolderCreator = (function () {
         // Check if there is a folder that needs to be created
         if (pathArray.length > 0) {
             if (this.config.verbose) {
-                gutil.log("Creating path " + pathArray[0]);
+                gutil.log("INFO: Creating path " + pathArray[0]);
             }
             var setFolder = util.format("/_api/web/folders");
             var opts = {
@@ -155,7 +155,7 @@ var FolderCreator = (function () {
                 return _this.createPathRecursive(pathArray.slice(1, pathArray.length), deferred);
             })
                 .catch(function (err) {
-                gutil.log("ERR: " + err);
+                gutil.log(gutil.colors.red("ERROR: " + err));
                 deferred.reject(err);
             });
         }

@@ -22,8 +22,10 @@ export class FileSync {
     spr: sprequest.ISPRequest;
 	folderCreator: FolderCreator;
 	fileInfo: IFileInfo;
+	started: moment.Moment;
 
     constructor(options: ISettings) {
+		this.started = moment();
         this.config = options;
         this.spr = sprequest.create({ username: options.username, password: options.password });
     }
@@ -85,10 +87,12 @@ export class FileSync {
 					return this.upload();
 				})
 				.then(() => {
+					this.started = moment();
 					// Ready to set metadata to file
 					return this.updateFileMetadata();
 				})
 				.then(() => {
+					this.started = moment();
 					// Ready to publish file
 					return this.publishFile();
 				})
@@ -120,11 +124,11 @@ export class FileSync {
 					this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files/add(url='" + this.fileInfo.filename + "',overwrite=true)",
 					headers
 				)
-				.then(function(success) {
-					gutil.log(gutil.colors.green('Upload successful'));
+				.then(success => {
+					gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
 					resolve(success);
 				})
-				.catch(function(err){
+				.catch(err => {
 					gutil.log(gutil.colors.red("Unable to upload file, it might be checked out to someone"));
 					reject(err);
 				});
@@ -165,7 +169,7 @@ export class FileSync {
 						this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Files('" + this.fileInfo.filename + "')/listitemallfields",
 						header
 					).then(postData => {
-						gutil.log(gutil.colors.green('Metadata updated successfully'));
+						gutil.log(gutil.colors.green('Metadata updated successfully'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
 						resolve(postData);
 					}).catch(err => {
 						gutil.log(gutil.colors.red("Unable to update metadata of the file"));
@@ -248,8 +252,8 @@ export class FileSync {
 		this.spr.post(
 				this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files('" + this.fileInfo.filename + "')/CheckIn(comment='Checked in via GULP', checkintype=" + type + ")",
 				header
-			).then(function (result) {
-				gutil.log(gutil.colors.green('Published file'));
+			).then(result => {
+				gutil.log(gutil.colors.green('Published file'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
 				deferred.resolve(result);
 			}
 		);

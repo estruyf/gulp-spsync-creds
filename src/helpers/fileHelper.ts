@@ -35,7 +35,7 @@ export class FileHelper {
         }
 		var library = config.file.relative.substring(ix2,ix)
         if(config.verbose){
-            gutil.log('Using library: ' + library)	
+            gutil.log('INFO: Using library: ' + library)	
         }
 		var filename = config.file.relative.substring(ix+1)
 		return {

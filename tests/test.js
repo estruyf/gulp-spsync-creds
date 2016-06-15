@@ -149,7 +149,8 @@ describe('gulp-spsync-creds: file upload tests', function () {
                 site: config.site,
                 username: config.username,
                 password: config.password,
-                cache: true
+                cache: true,
+                verbose: true
             }))
             .on('finish', function () {
                 spr.get(retrieveFileUrl, {
@@ -172,7 +173,8 @@ describe('gulp-spsync-creds: file upload tests', function () {
                 site: config.site,
                 username: config.username,
                 password: config.password,
-                cache: true
+                cache: true,
+                verbose: true
             }))
             .on('finish', function () {
                 spr.get(retrieveFileUrl, {
@@ -195,7 +197,8 @@ describe('gulp-spsync-creds: file upload tests', function () {
                 password: config.password,
                 files_metadata: config.fileMetadata,
                 update_metadata: true,
-                cache: true
+                cache: true,
+                verbose: true
             }))
             .on('finish', function () {
                 spr.get(metadataFileUrl, {
@@ -220,7 +223,8 @@ describe('gulp-spsync-creds: file upload tests', function () {
                 username: config.username,
                 password: config.password,
                 files_metadata: config.fileMetadata,
-                publish: true
+                publish: true,
+                verbose: true
             }))
             .on('finish', function () {
                 spr.get(publishFileUrl, {

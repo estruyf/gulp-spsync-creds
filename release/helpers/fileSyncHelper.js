@@ -13,6 +13,7 @@ var digestVal = {
 };
 var FileSync = (function () {
     function FileSync(options) {
+        this.started = moment();
         this.config = options;
         this.spr = sprequest.create({ username: options.username, password: options.password });
     }
@@ -74,10 +75,12 @@ var FileSync = (function () {
                 return _this.upload();
             })
                 .then(function () {
+                _this.started = moment();
                 // Ready to set metadata to file
                 return _this.updateFileMetadata();
             })
                 .then(function () {
+                _this.started = moment();
                 // Ready to publish file
                 return _this.publishFile();
             })
@@ -105,7 +108,7 @@ var FileSync = (function () {
         return new Promise(function (resolve, reject) {
             _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files/add(url='" + _this.fileInfo.filename + "',overwrite=true)", headers)
                 .then(function (success) {
-                gutil.log(gutil.colors.green('Upload successful'));
+                gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(_this.started, 'milliseconds').toString() + 'ms'));
                 resolve(success);
             })
                 .catch(function (err) {
@@ -146,7 +149,7 @@ var FileSync = (function () {
                         body: metadata
                     };
                     _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files('" + _this.fileInfo.filename + "')/listitemallfields", header).then(function (postData) {
-                        gutil.log(gutil.colors.green('Metadata updated successfully'));
+                        gutil.log(gutil.colors.green('Metadata updated successfully'), gutil.colors.magenta(moment().diff(_this.started, 'milliseconds').toString() + 'ms'));
                         resolve(postData);
                     }).catch(function (err) {
                         gutil.log(gutil.colors.red("Unable to update metadata of the file"));
@@ -212,6 +215,7 @@ var FileSync = (function () {
      * Check in file - Minor: 0 - Major: 1 - Overwrite: 2
      */
     FileSync.prototype.checkin = function (deferred, type) {
+        var _this = this;
         // Check if there was a checkin type specified
         if (!type) {
             // MinorCheckIn = 0
@@ -224,7 +228,7 @@ var FileSync = (function () {
             }
         };
         this.spr.post(this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Files('" + this.fileInfo.filename + "')/CheckIn(comment='Checked in via GULP', checkintype=" + type + ")", header).then(function (result) {
-            gutil.log(gutil.colors.green('Published file'));
+            gutil.log(gutil.colors.green('Published file'), gutil.colors.magenta(moment().diff(_this.started, 'milliseconds').toString() + 'ms'));
             deferred.resolve(result);
         });
         return deferred.promise;

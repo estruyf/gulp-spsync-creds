@@ -29,18 +29,12 @@ export class FolderCreator {
 	 * Check which folders exists and create which doesn't
 	 */
     checkFoldersAndCreateIfNotExist() {
-		let library = this.fileInfo.library;
-		// Convert library location to URL path
-		if(path.sep == "\\"){
-			library = library.replace(/\\/g, "/")
-		}
-        // Get all folders
-        let foldersArray: string[] = fileHlp.getFolderPathsArray(library);
-		let proms = [];
-		foldersArray.forEach(val => {
-			proms.push(this.checkFolderExists(val));
-		});
-        return new Promise<any>((resolve, reject) => {
+		return new Promise<any>((resolve, reject) => {
+			let library = this.fileInfo.library;
+			// Convert library location to URL path
+			if(path.sep == "\\"){
+				library = library.replace(/\\/g, "/")
+			}
 			// Cache checks
 			if (this.config.cache) {
 				if (this.checkCachedLocation(library)) {
@@ -52,6 +46,13 @@ export class FolderCreator {
 				}
 			}
 			
+			// Get all folders
+			let foldersArray: string[] = fileHlp.getFolderPathsArray(library);
+			let proms = [];
+			foldersArray.forEach(val => {
+				proms.push(this.checkFolderExists(val));
+			});
+
             Promise.all(proms).then(data => {
 				// Get all folder indexes that do not exist
                 var erroredIndexes = data.map((val, index) => {
@@ -113,14 +114,14 @@ export class FolderCreator {
 		};
 		let endPoint = this.config.site + getFolderUrl;
 		if(this.config.verbose){
-			gutil.log("Checking folder exists " + endPoint);
+			gutil.log("INFO: Checking folder exists " + endPoint);
 		}
 
         return new Promise<any>((resolve, reject) => {
 			this.spr.get(endPoint, header)
                 .then(success => {
                     if(this.config.verbose) {
-                        gutil.log('Folder ' + folderName + ' exists');
+                        gutil.log('INFO: Folder ' + folderName + ' exists');
                     }
 					// Temp cache the processed folder
 					this.cacheLocation(folderName);
@@ -145,7 +146,7 @@ export class FolderCreator {
 		// Check if there is a folder that needs to be created
 		if (pathArray.length > 0) {
 			if(this.config.verbose){
-				gutil.log("Creating path " + pathArray[0]);
+				gutil.log("INFO: Creating path " + pathArray[0]);
 			}
 			var setFolder = util.format("/_api/web/folders");
 			var opts = {
@@ -171,7 +172,7 @@ export class FolderCreator {
 					return this.createPathRecursive(pathArray.slice(1, pathArray.length), deferred);
 				})
 				.catch(err => {
-					gutil.log("ERR: " + err);
+					gutil.log(gutil.colors.red("ERROR: " + err));
 					deferred.reject(err);
 				});
 		} else {
