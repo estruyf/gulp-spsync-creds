@@ -25,7 +25,6 @@ export class FileSync {
 	started: moment.Moment;
 
     constructor(options: ISettings) {
-		this.started = moment();
         this.config = options;
         this.spr = sprequest.create({ username: options.username, password: options.password });
     }
@@ -34,6 +33,7 @@ export class FileSync {
 	 * Initialize file upload
 	 */
     public init(): Promise<any> {
+		this.started = moment();
 		return new Promise<any>((resolve, reject) => {
 			if (!this.CheckDigestLifespan()) {
 				this.spr.requestDigest(this.config.site).then(result => {

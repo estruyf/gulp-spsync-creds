@@ -13,7 +13,6 @@ var digestVal = {
 };
 var FileSync = (function () {
     function FileSync(options) {
-        this.started = moment();
         this.config = options;
         this.spr = sprequest.create({ username: options.username, password: options.password });
     }
@@ -22,6 +21,7 @@ var FileSync = (function () {
      */
     FileSync.prototype.init = function () {
         var _this = this;
+        this.started = moment();
         return new Promise(function (resolve, reject) {
             if (!_this.CheckDigestLifespan()) {
                 _this.spr.requestDigest(_this.config.site).then(function (result) {
