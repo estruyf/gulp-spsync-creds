@@ -12,7 +12,8 @@ export interface ISettings {
     publish: boolean,
     files_metadata: any,
     file: File,
-    content: Buffer
+    content: Buffer,
+    associatedHtml: boolean
 }
 
 export interface IDigest {

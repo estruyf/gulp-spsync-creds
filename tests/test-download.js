@@ -40,7 +40,8 @@ describe('gulp-spsync-creds: download file tests', function () {
             username: config.username,
             password: config.password,
             startFolder: startFolder,
-            verbose: true
+            verbose: true,
+            associatedHtml: false
         })
         .pipe(gulp.dest(path))
         .on('finish', () => {

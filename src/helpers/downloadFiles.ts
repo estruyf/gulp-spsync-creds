@@ -47,7 +47,37 @@ export class FileDownload {
                                 gutil.log("INFO: Processing retrieved files and folders");
                             }
                             let allFiles = this.processFilesAndFolders(filesAndFolders.body.d);
-                            resolve(allFiles);
+
+                            // Check if all the files need to get downloaded -> important for display templates
+                            if (this.config.associatedHtml) {
+                                resolve(allFiles);
+                                return;
+                            }
+
+                            // Check which files have to be downloaded -> files associated to HTML files do not have to be downloaded
+                            var proms = [];
+                            allFiles.forEach(file => {
+                                if (file.name.indexOf('.js') !== -1 ||
+                                    file.name.indexOf('.aspx') !== -1 ||
+                                    file.name.indexOf('.master') !== -1) {
+                                    proms.push(this.checkHtmlAssociation(file));
+                                }
+                            });
+                            Promise.all(proms).then((data: Array<IFileDownload>) => {
+                                if (data !== null) {
+                                    data.forEach(file => {
+                                        if (file !== null) {
+                                            if (file.associated) {
+                                                // Filter out the retrieved files that ara associated to an HTML file
+                                                allFiles = allFiles.filter(f => {
+                                                    return f.name !== file.name;
+                                                });
+                                            }
+                                        }
+                                    });
+                                }                                
+                                resolve(allFiles);
+                            });
                         } else {
                             resolve(null);
                         }
@@ -122,11 +152,46 @@ export class FileDownload {
                 resolve(data);
             })
             .catch(err => {
-                gutil.log(gutil.colors.red("ERROR: Unable to get the download location"));
                 resolve(null);
             });
         });
     };
+
+    /*
+     * Check HTML association
+     */
+    public checkHtmlAssociation(file: IFileDownload): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let headers = {
+                "content-type":"application/json;odata=verbose",
+                "Accept":"application/json;odata=verbose"
+            };
+
+            let restUrl = this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.config.startFolder + '/' + file.name + "')/ListItemAllFields?$select=HtmlDesignAssociated";
+            this.spr.get(
+                restUrl,
+                headers
+            )
+            .then(data => {
+                if (data.body !== null) {
+                    if (typeof data.body.d !== 'undefined') {
+                        if (typeof data.body.d.HtmlDesignAssociated !== 'undefined') {
+                            if (data.body.d.HtmlDesignAssociated === true) {
+                                file.associated = true;
+                            } else {
+                                file.associated = false;
+                            }
+                            resolve(file);
+                        }
+                    }
+                }
+            })
+            .catch(err => {
+                gutil.log(gutil.colors.red("ERROR: Unable to retrieve metadata of file: ", file.name));
+                resolve(null);
+            });
+        });
+    }
 
     /*
      * Download the file - get the file content 

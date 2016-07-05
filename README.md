@@ -3,7 +3,7 @@
 
 [![NPM](https://nodei.co/npm/gulp-spsync-creds.png?compact=true)](https://nodei.co/npm/gulp-spsync-creds/)
 
-This Gulp plugin is based on [gulp-spsync](https://github.com/wictorwilen/gulp-spsync) which has been created by Wictor Wilen. The difference with gulp-spsync is that this plugin makes use for client credentials (username and password) in order to upload or download files. This makes the plugin usable for both SharePoint Online and on-premises.
+This Gulp plugin is based on [gulp-spsync](https://github.com/wictorwilen/gulp-spsync) which has been created by Wictor Wilen. The difference with gulp-spsync is that this plugin makes use for client credentials (username and password) in order to upload and/or download files. This makes the plugin usable for both SharePoint Online and on-premises environments.
 
 ## Installation
 Run the following command to install the gulp-spsync-creds plugin:
@@ -135,19 +135,25 @@ With the files_metadata option you can specify the metadata of all the files you
 ]
 ```
 
-### Publish
+### publish
 Type: `Boolean`
 Default: `false`
 
 With this option you can specify if you want to publish files after they are uploaded.
 
-### Cache
+### cache
 Type: `Boolean`
 Default: `false`
 
 If set to true the plugin caches library locations that already have been processed. Makes the watch tasks quicker.
 
-### Verbose
+### associatedHtml *(only for download actions)*
+Type: `Boolean`
+Default: `true`
+
+With this property you can specify if you want to download all files (by default set to `true`) from a folder. This will also download the files that are associated to an HTML template like a page layout, master page and display template. If you set this property to `false`, the plugin only downloads the HTML files and leaves the ".aspx", ".master" and ".js" files in the folder.
+
+### verbose
 Type: `Boolean`
 Default: `false`
 

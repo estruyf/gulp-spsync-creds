@@ -7,5 +7,6 @@ export interface IFileDownload {
     name: string,
     path: string,
     contentUrl: string,
-    content: Buffer
+    content: Buffer,
+    associated: boolean
 }
