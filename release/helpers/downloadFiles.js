@@ -36,7 +36,35 @@ var FileDownload = (function () {
                                 gutil.log("INFO: Processing retrieved files and folders");
                             }
                             var allFiles_1 = _this.processFilesAndFolders(filesAndFolders.body.d);
-                            resolve(allFiles_1);
+                            // Check if all the files need to get downloaded -> important for display templates
+                            if (_this.config.associatedHtml) {
+                                resolve(allFiles_1);
+                                return;
+                            }
+                            // Check which files have to be downloaded -> files associated to HTML files do not have to be downloaded
+                            var proms = [];
+                            allFiles_1.forEach(function (file) {
+                                if (file.name.indexOf('.js') !== -1 ||
+                                    file.name.indexOf('.aspx') !== -1 ||
+                                    file.name.indexOf('.master') !== -1) {
+                                    proms.push(_this.checkHtmlAssociation(file));
+                                }
+                            });
+                            Promise.all(proms).then(function (data) {
+                                if (data !== null) {
+                                    data.forEach(function (file) {
+                                        if (file !== null) {
+                                            if (file.associated) {
+                                                // Filter out the retrieved files that ara associated to an HTML file
+                                                allFiles_1 = allFiles_1.filter(function (f) {
+                                                    return f.name !== file.name;
+                                                });
+                                            }
+                                        }
+                                    });
+                                }
+                                resolve(allFiles_1);
+                            });
                         }
                         else {
                             resolve(null);
@@ -107,12 +135,44 @@ var FileDownload = (function () {
                 resolve(data);
             })
                 .catch(function (err) {
-                gutil.log(gutil.colors.red("ERROR: Unable to get the download location"));
                 resolve(null);
             });
         });
     };
     ;
+    /*
+     * Check HTML association
+     */
+    FileDownload.prototype.checkHtmlAssociation = function (file) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var headers = {
+                "content-type": "application/json;odata=verbose",
+                "Accept": "application/json;odata=verbose"
+            };
+            var restUrl = _this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.config.startFolder + '/' + file.name + "')/ListItemAllFields?$select=HtmlDesignAssociated";
+            _this.spr.get(restUrl, headers)
+                .then(function (data) {
+                if (data.body !== null) {
+                    if (typeof data.body.d !== 'undefined') {
+                        if (typeof data.body.d.HtmlDesignAssociated !== 'undefined') {
+                            if (data.body.d.HtmlDesignAssociated === true) {
+                                file.associated = true;
+                            }
+                            else {
+                                file.associated = false;
+                            }
+                            resolve(file);
+                        }
+                    }
+                }
+            })
+                .catch(function (err) {
+                gutil.log(gutil.colors.red("ERROR: Unable to retrieve metadata of file: ", file.name));
+                resolve(null);
+            });
+        });
+    };
     /*
      * Download the file - get the file content
      */

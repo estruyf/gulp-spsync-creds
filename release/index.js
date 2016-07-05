@@ -95,7 +95,8 @@ function GetOptions(args) {
         publish: false,
         file: null,
         content: null,
-        cache: false
+        cache: false,
+        associatedHtml: true
     };
     // Check arguments
     if (!args) {
@@ -123,6 +124,7 @@ function GetOptions(args) {
         options.publish = args.publish || options.publish;
         options.cache = args.cache || options.cache;
         options.startFolder = args.startFolder || options.startFolder;
+        options.associatedHtml = args.associatedHtml || options.associatedHtml;
     }
     return options;
 }
