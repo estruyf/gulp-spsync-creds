@@ -100,6 +100,7 @@ With the files_metadata option you can specify the metadata of all the files you
         "ManagedPropertyMapping": "'Path','Title':'Title'",
         "ContentTypeId": "0x0101002039C03B61C64EC4A04F5361F38510660500A0383064C59087438E649B7323C95AF6",
         "DisplayTemplateLevel": "Item",
+        "TemplateHidden": false,
         "TargetControlType": {
             "__metadata": {
             "type": "Collection(Edm.String)"
@@ -121,6 +122,7 @@ With the files_metadata option you can specify the metadata of all the files you
         "MasterPageDescription": "This is a display template added via gulp.",
         "ContentTypeId": "0x0101002039C03B61C64EC4A04F5361F38510660500A0383064C59087438E649B7323C95AF6",
         "DisplayTemplateLevel": "Control",
+        "TemplateHidden": false,
         "TargetControlType": {
             "__metadata": {
             "type": "Collection(Edm.String)"
