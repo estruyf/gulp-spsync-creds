@@ -191,9 +191,9 @@ var FileSync = (function () {
         return deferred.promise;
     };
     /*
-     * Check out file
+     * Check the file checkouttype
      */
-    FileSync.prototype.checkout = function () {
+    FileSync.prototype.checkouttype = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             var header = {
@@ -202,9 +202,58 @@ var FileSync = (function () {
                     "X-RequestDigest": digestVal.digest
                 }
             };
-            _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files('" + _this.fileInfo.filename + "')/CheckOut()", header)
+            _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files('" + _this.fileInfo.filename + "')/checkOutType", header)
                 .then(function (success) {
                 resolve(success);
+            })
+                .catch(function (err) {
+                reject(err);
+            });
+        });
+    };
+    /*
+     * Check out file
+     */
+    FileSync.prototype.checkout = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            if (_this.config.verbose) {
+                gutil.log("INFO: Checking if file (" + _this.fileInfo.filename + ") is checked out");
+            }
+            // Retrieve the file its checkout type
+            _this.checkouttype()
+                .then(function (data) {
+                if (typeof data.body === "undefined" || typeof data.body.d === "undefined" || typeof data.body.d.CheckOutType === "undefined") {
+                    // Try publishing the file
+                    resolve(data);
+                }
+                if (_this.config.verbose) {
+                    gutil.log('INFO: File checkout type:', data.body.d.CheckOutType);
+                }
+                // Check if the file checkout type is not 0 (checked out)
+                if (data.body.d.CheckOutType !== 0) {
+                    // File needs to be checked out before publish
+                    var header = {
+                        "headers": {
+                            "content-type": "application/json;odata=verbose",
+                            "X-RequestDigest": digestVal.digest
+                        }
+                    };
+                    return _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files('" + _this.fileInfo.filename + "')/CheckOut()", header)
+                        .then(function (success) {
+                        if (_this.config.verbose) {
+                            gutil.log('INFO: File is now checked out and ready to be published');
+                        }
+                        resolve(success);
+                    })
+                        .catch(function (err) {
+                        reject(err);
+                    });
+                }
+                else {
+                    // File already checked out
+                    resolve(data);
+                }
             })
                 .catch(function (err) {
                 reject(err);

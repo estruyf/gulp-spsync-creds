@@ -210,9 +210,9 @@ export class FileSync {
 	}
 
 	/*
-	 * Check out file
+	 * Check the file checkouttype
 	 */
-	checkout(): Promise<any> {
+	checkouttype(): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			let header = {
 				"headers":{
@@ -221,7 +221,7 @@ export class FileSync {
 				}
 			};
 			this.spr.post(
-					this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files('" + this.fileInfo.filename + "')/CheckOut()",
+					this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files('" + this.fileInfo.filename + "')/checkOutType",
 					header
 				)
 				.then(success => {
@@ -231,6 +231,60 @@ export class FileSync {
 					reject(err);
 				}
 			);
+		});
+	}
+
+	/*
+	 * Check out file
+	 */
+	checkout(): Promise<any> {
+		return new Promise<any>((resolve, reject) => {
+			if (this.config.verbose) {
+				gutil.log(`INFO: Checking if file (${this.fileInfo.filename}) is checked out`);
+			}
+			// Retrieve the file its checkout type
+			this.checkouttype()
+				.then((data) => {
+					if (typeof data.body === "undefined" || typeof data.body.d === "undefined" || typeof data.body.d.CheckOutType === "undefined") {
+						// Try publishing the file
+						resolve(data);
+					}
+
+					if (this.config.verbose) {
+						gutil.log('INFO: File checkout type:', data.body.d.CheckOutType);
+					}
+
+					// Check if the file checkout type is not 0 (checked out)
+					if (data.body.d.CheckOutType !== 0) {
+						// File needs to be checked out before publish
+						let header = {
+							"headers":{
+								"content-type":"application/json;odata=verbose",
+								"X-RequestDigest": digestVal.digest
+							}
+						};
+						return this.spr.post(
+								this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files('" + this.fileInfo.filename + "')/CheckOut()",
+								header
+							)
+							.then(success => {
+								if (this.config.verbose) {
+									gutil.log('INFO: File is now checked out and ready to be published');
+								}
+								resolve(success);
+							})
+							.catch(err => {
+								reject(err);
+							}
+						);
+					} else {
+						// File already checked out
+						resolve(data);
+					}
+				})
+				.catch((err) => {
+					reject(err);
+				});
 		});
 	}
 
