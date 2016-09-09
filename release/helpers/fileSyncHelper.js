@@ -11,6 +11,8 @@ var digestVal = {
     digest: null,
     retrieved: null
 };
+var forceCheckoutValue = false; // Default master page gallery setting
+var docLibChecked = false;
 var FileSync = (function () {
     function FileSync(options) {
         this.config = options;
@@ -68,29 +70,69 @@ var FileSync = (function () {
         this.fileInfo = fileHlp.getFileContext(this.config);
         this.folderCreator = new FolderCreator_1.FolderCreator(this.config, this.spr, digestVal.digest, this.fileInfo);
         return new Promise(function (resolve, reject) {
-            // Create the required folders
-            _this.folderCreator.checkFoldersAndCreateIfNotExist()
-                .then(function () {
-                // Ready to upload file
-                return _this.upload();
-            })
-                .then(function () {
-                _this.started = moment();
-                // Ready to set metadata to file
-                return _this.updateFileMetadata();
-            })
-                .then(function () {
-                _this.started = moment();
-                // Ready to publish file
-                return _this.publishFile();
-            })
-                .then(function () {
-                // Everything done
-                resolve(null);
-            })
-                .catch(function (err) {
-                reject(err);
+            // Check the library settings - this will only be done the first time
+            _this.checkLibrarySettings().then(function () {
+                // Create the required folders
+                return _this.folderCreator.checkFoldersAndCreateIfNotExist()
+                    .then(function () {
+                    // Ready to upload file
+                    return _this.upload();
+                })
+                    .then(function () {
+                    _this.started = moment();
+                    // Ready to set metadata to file
+                    return _this.updateFileMetadata();
+                })
+                    .then(function () {
+                    _this.started = moment();
+                    // Ready to publish file
+                    return _this.publishFile();
+                })
+                    .then(function () {
+                    // Everything done
+                    resolve(null);
+                })
+                    .catch(function (err) {
+                    reject(err);
+                });
             });
+        });
+    };
+    /*
+     * Check the document libary checkout setting
+     */
+    FileSync.prototype.checkLibrarySettings = function () {
+        var _this = this;
+        var headers = {
+            "headers": {
+                "X-RequestDigest": digestVal.digest,
+                "content-type": "application/json;odata=verbose",
+                "Accept": "application/json;odata=verbose"
+            }
+        };
+        return new Promise(function (resolve, reject) {
+            if (!docLibChecked) {
+                _this.spr.get(_this.config.site + "/_api/Web/GetCatalog(116)?$select=forceCheckoutValue", headers).then(function (listInfo) {
+                    docLibChecked = true;
+                    if (listInfo !== null && typeof listInfo.body.d.ForceCheckout !== "undefined") {
+                        if (_this.config.verbose) {
+                            gutil.log('INFO: ForceCheckout value of the document libary is set to:', listInfo.body.d.ForceCheckout);
+                        }
+                        forceCheckoutValue = listInfo.body.d.ForceCheckout;
+                        resolve(forceCheckoutValue);
+                    }
+                    else {
+                        resolve(forceCheckoutValue);
+                    }
+                }).catch(function (err) {
+                    docLibChecked = true;
+                    resolve(forceCheckoutValue);
+                });
+            }
+            else {
+                // Document library already checked
+                resolve(forceCheckoutValue);
+            }
         });
     };
     /*
@@ -106,15 +148,38 @@ var FileSync = (function () {
             "json": false
         };
         return new Promise(function (resolve, reject) {
-            _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files/add(url='" + _this.fileInfo.filename + "',overwrite=true)", headers)
-                .then(function (success) {
-                gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(_this.started, 'milliseconds').toString() + 'ms'));
-                resolve(success);
-            })
-                .catch(function (err) {
-                gutil.log(gutil.colors.red("Unable to upload file, it might be checked out to someone"));
-                reject(err);
+            _this.checkoutBeforeUpload().then(function () {
+                return _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files/add(url='" + _this.fileInfo.filename + "',overwrite=true)", headers)
+                    .then(function (success) {
+                    gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(_this.started, 'milliseconds').toString() + 'ms'));
+                    resolve(success);
+                })
+                    .catch(function (err) {
+                    gutil.log(gutil.colors.red("Unable to upload file, it might be checked out to someone"));
+                    reject(err);
+                });
             });
+        });
+    };
+    /*
+     * Check if a file needs to be checked out before you can do a new upload
+     */
+    FileSync.prototype.checkoutBeforeUpload = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            if (forceCheckoutValue) {
+                return _this.checkout().then(function () {
+                    if (_this.config.verbose) {
+                        gutil.log("INFO: File " + _this.fileInfo.filename + " is now checked out and ready for new upload");
+                    }
+                    resolve(null);
+                }).catch(function () {
+                    resolve(null);
+                });
+            }
+            else {
+                resolve(null);
+            }
         });
     };
     /*

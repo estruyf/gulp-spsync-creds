@@ -16,6 +16,8 @@ let digestVal: IDigest = {
 	digest: null,
 	retrieved: null
 }
+let forceCheckoutValue: boolean = false; // Default master page gallery setting
+let docLibChecked: boolean = false;
 
 export class FileSync {
     config: ISettings;
@@ -80,30 +82,70 @@ export class FileSync {
 		this.fileInfo = fileHlp.getFileContext(this.config);
 		this.folderCreator = new FolderCreator(this.config, this.spr, digestVal.digest, this.fileInfo);
 		return new Promise<any>((resolve, reject) => {
-			// Create the required folders
-			this.folderCreator.checkFoldersAndCreateIfNotExist()
-				.then(() => {
-					// Ready to upload file
-					return this.upload();
-				})
-				.then(() => {
-					this.started = moment();
-					// Ready to set metadata to file
-					return this.updateFileMetadata();
-				})
-				.then(() => {
-					this.started = moment();
-					// Ready to publish file
-					return this.publishFile();
-				})
-				.then(() => {
-					// Everything done
-					resolve(null);
-				})
-				.catch((err) => {
-					reject(err);
-				}
-			);
+			// Check the library settings - this will only be done the first time
+			this.checkLibrarySettings().then(() => {
+				// Create the required folders
+				return this.folderCreator.checkFoldersAndCreateIfNotExist()
+					.then(() => {
+						// Ready to upload file
+						return this.upload();
+					})
+					.then(() => {
+						this.started = moment();
+						// Ready to set metadata to file
+						return this.updateFileMetadata();
+					})
+					.then(() => {
+						this.started = moment();
+						// Ready to publish file
+						return this.publishFile();
+					})
+					.then(() => {
+						// Everything done
+						resolve(null);
+					})
+					.catch((err) => {
+						reject(err);
+					}
+				);
+			});
+		});
+	}
+
+	/*
+	 * Check the document libary checkout setting
+	 */
+	private checkLibrarySettings(): Promise<any> {
+		let headers = {
+			"headers":{
+				"X-RequestDigest": digestVal.digest,
+				"content-type":"application/json;odata=verbose",
+				"Accept":"application/json;odata=verbose"
+			}
+		};
+
+		return new Promise<any>((resolve, reject) => {
+			if (!docLibChecked) {
+				this.spr.get(this.config.site + "/_api/Web/GetCatalog(116)?$select=forceCheckoutValue", headers).then((listInfo: any) => {
+					docLibChecked = true;
+					if (listInfo !== null && typeof listInfo.body.d.ForceCheckout !== "undefined") {
+						if (this.config.verbose) {
+							gutil.log('INFO: ForceCheckout value of the document libary is set to:', listInfo.body.d.ForceCheckout);
+						}
+
+						forceCheckoutValue = listInfo.body.d.ForceCheckout;
+						resolve(forceCheckoutValue);
+					} else {
+						resolve(forceCheckoutValue);
+					}
+				}).catch((err) => {
+					docLibChecked = true;
+					resolve(forceCheckoutValue);
+				});
+			} else {
+				// Document library already checked
+				resolve(forceCheckoutValue);
+			}
 		});
 	}
 
@@ -120,18 +162,40 @@ export class FileSync {
 		};
 
 		return new Promise<any>((resolve, reject) => {
-			this.spr.post(
-					this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files/add(url='" + this.fileInfo.filename + "',overwrite=true)",
-					headers
-				)
-				.then(success => {
-					gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
-					resolve(success);
-				})
-				.catch(err => {
-					gutil.log(gutil.colors.red("Unable to upload file, it might be checked out to someone"));
-					reject(err);
+			this.checkoutBeforeUpload().then(() => {
+				return this.spr.post(
+						this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files/add(url='" + this.fileInfo.filename + "',overwrite=true)",
+						headers
+					)
+					.then(success => {
+						gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
+						resolve(success);
+					})
+					.catch(err => {
+						gutil.log(gutil.colors.red("Unable to upload file, it might be checked out to someone"));
+						reject(err);
+					});
 				});
+		});
+	}
+
+	/*
+	 * Check if a file needs to be checked out before you can do a new upload
+	 */
+	private checkoutBeforeUpload(): Promise<any> {
+		return new Promise<any>((resolve, reject) => {
+			if (forceCheckoutValue) {
+				return this.checkout().then(() => {
+					if (this.config.verbose) {
+						gutil.log(`INFO: File ${this.fileInfo.filename} is now checked out and ready for new upload`)
+					}
+					resolve(null);
+				}).catch(() => {
+					resolve(null);
+				})
+			} else {
+				resolve(null);
+			}
 		});
 	}
 
