@@ -14,7 +14,8 @@ import * as fileHelper from './fileHelper';
 let fileHlp = new fileHelper.FileHelper();
 let digestVal: IDigest = {
 	digest: null,
-	retrieved: null
+	retrieved: null,
+	url: ""
 }
 let forceCheckoutValue: boolean = false; // Default master page gallery setting
 let docLibChecked: boolean = false;
@@ -37,11 +38,12 @@ export class FileSync {
     public init(): Promise<any> {
 		this.started = moment();
 		return new Promise<any>((resolve, reject) => {
-			if (!this.CheckDigestLifespan()) {
+			if (!this.CheckDigestLifespan() || this.config.site !== digestVal.url) {
 				this.spr.requestDigest(this.config.site).then(result => {
 					// Store digest
 					digestVal.digest = result;
 					digestVal.retrieved = moment();
+					digestVal.url = this.config.site
 					if (this.config.verbose) {
 						gutil.log('INFO: New digest received');
 					}

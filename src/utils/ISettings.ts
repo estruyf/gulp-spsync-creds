@@ -18,5 +18,6 @@ export interface ISettings {
 
 export interface IDigest {
     digest: string,
-    retrieved: moment.Moment
+    retrieved: moment.Moment,
+    url: string
 }

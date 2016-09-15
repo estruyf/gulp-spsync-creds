@@ -9,7 +9,8 @@ var fileHelper = require('./fileHelper');
 var fileHlp = new fileHelper.FileHelper();
 var digestVal = {
     digest: null,
-    retrieved: null
+    retrieved: null,
+    url: ""
 };
 var forceCheckoutValue = false; // Default master page gallery setting
 var docLibChecked = false;
@@ -25,11 +26,12 @@ var FileSync = (function () {
         var _this = this;
         this.started = moment();
         return new Promise(function (resolve, reject) {
-            if (!_this.CheckDigestLifespan()) {
+            if (!_this.CheckDigestLifespan() || _this.config.site !== digestVal.url) {
                 _this.spr.requestDigest(_this.config.site).then(function (result) {
                     // Store digest
                     digestVal.digest = result;
                     digestVal.retrieved = moment();
+                    digestVal.url = _this.config.site;
                     if (_this.config.verbose) {
                         gutil.log('INFO: New digest received');
                     }
