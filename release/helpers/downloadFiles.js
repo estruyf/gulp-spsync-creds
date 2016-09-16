@@ -183,7 +183,7 @@ var FileDownload = (function () {
         }
         return new Promise(function (resolve, reject) {
             if (file.contentUrl !== null) {
-                _this.spr.get(file.contentUrl)
+                _this.spr.get(file.contentUrl, { encoding: null })
                     .then(function (data) {
                     if (_this.config.verbose) {
                         gutil.log(gutil.colors.green("INFO: Download " + file.name + " complete"));

@@ -202,7 +202,7 @@ export class FileDownload {
         }
         return new Promise((resolve, reject) => {
             if (file.contentUrl !== null) {
-                this.spr.get(file.contentUrl)
+                this.spr.get(file.contentUrl, { encoding: null })
                 .then(data => {
                     if (this.config.verbose) {
                         gutil.log(gutil.colors.green("INFO: Download " + file.name + " complete"));
