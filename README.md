@@ -36,9 +36,9 @@ var gulp = require('gulp');
 var spdwn = require('gulp-spsync-creds').download;
 
 spdwn({
-    "site": "<username>",
-    "username": "<password>",
-    "password": "<site-url>",
+    "site": "<site-url>",
+    "username": "<username>",
+    "password": "<password>",
     "startFolder": "<relative-folder-location>"
 }).pipe(gulp.dest("src"));
 ```
