@@ -40,7 +40,7 @@ export function sync (args: ISettings) {
 
 		gutil.log('Uploading ' + file.relative);
 
-		fileSync.init().then(fileDone)
+		fileSync.init().then(fileDone);
 	},function(cb){
 		if(options.verbose){
 			gutil.log("And we're done...")	
@@ -111,7 +111,8 @@ function GetOptions (args: ISettings) {
 		file: null,
 		content: null,
 		cache: false,
-		associatedHtml: true
+		associatedHtml: true,
+		libraryPath: ""
 	}
 
     // Check arguments
@@ -142,6 +143,7 @@ function GetOptions (args: ISettings) {
 		options.cache = args.cache || options.cache;
 		options.startFolder = args.startFolder || options.startFolder;
 		options.associatedHtml = args.associatedHtml || options.associatedHtml;
+		options.libraryPath = args.libraryPath || options.libraryPath;
 	}
 
 	return options;

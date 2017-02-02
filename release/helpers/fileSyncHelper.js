@@ -114,13 +114,17 @@ var FileSync = (function () {
         };
         return new Promise(function (resolve, reject) {
             if (!docLibChecked) {
-                _this.spr.get(_this.config.site + "/_api/Web/GetCatalog(116)?$select=forceCheckoutValue", headers).then(function (listInfo) {
+                var libSettingsUrl = _this.config.site + "/_api/Web/GetCatalog(116)?$select=forceCheckoutValue";
+                if (_this.fileInfo.library.indexOf('_catalogs/masterpage') !== 0) {
+                    libSettingsUrl = _this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Properties";
+                }
+                _this.spr.get(libSettingsUrl, headers).then(function (listInfo) {
                     docLibChecked = true;
-                    if (listInfo !== null && typeof listInfo.body.d.ForceCheckout !== "undefined") {
+                    if (listInfo !== null && (typeof listInfo.body.d.ForceCheckout !== "undefined" || listInfo.body.d.vti_x005f_listrequirecheckout !== "undefined")) {
                         if (_this.config.verbose) {
-                            gutil.log('INFO: ForceCheckout value of the document libary is set to:', listInfo.body.d.ForceCheckout);
+                            gutil.log('INFO: ForceCheckout value of the document libary is set to:', (listInfo.body.d.ForceCheckout || listInfo.body.d.vti_x005f_listrequirecheckout));
                         }
-                        forceCheckoutValue = listInfo.body.d.ForceCheckout;
+                        forceCheckoutValue = (listInfo.body.d.ForceCheckout || listInfo.body.d.vti_x005f_listrequirecheckout);
                         resolve(forceCheckoutValue);
                     }
                     else {

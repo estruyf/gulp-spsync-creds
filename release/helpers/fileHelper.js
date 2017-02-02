@@ -34,7 +34,7 @@ var FileHelper = (function () {
         }
         var filename = config.file.relative.substring(ix + 1);
         return {
-            library: library,
+            library: config.libraryPath !== "" ? config.libraryPath + "/" + library : library,
             filename: filename
         };
     };

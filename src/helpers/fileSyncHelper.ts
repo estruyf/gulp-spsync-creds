@@ -128,14 +128,18 @@ export class FileSync {
 
 		return new Promise<any>((resolve, reject) => {
 			if (!docLibChecked) {
-				this.spr.get(this.config.site + "/_api/Web/GetCatalog(116)?$select=forceCheckoutValue", headers).then((listInfo: any) => {
+				let libSettingsUrl = this.config.site + "/_api/Web/GetCatalog(116)?$select=forceCheckoutValue";
+				if (this.fileInfo.library.indexOf('_catalogs/masterpage') !== 0) {
+					libSettingsUrl = this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Properties";
+				}
+				this.spr.get(libSettingsUrl, headers).then((listInfo: any) => {
 					docLibChecked = true;
-					if (listInfo !== null && typeof listInfo.body.d.ForceCheckout !== "undefined") {
+					if (listInfo !== null && (typeof listInfo.body.d.ForceCheckout !== "undefined" || listInfo.body.d.vti_x005f_listrequirecheckout !== "undefined")) {
 						if (this.config.verbose) {
-							gutil.log('INFO: ForceCheckout value of the document libary is set to:', listInfo.body.d.ForceCheckout);
+							gutil.log('INFO: ForceCheckout value of the document libary is set to:', (listInfo.body.d.ForceCheckout || listInfo.body.d.vti_x005f_listrequirecheckout));
 						}
 
-						forceCheckoutValue = listInfo.body.d.ForceCheckout;
+						forceCheckoutValue = (listInfo.body.d.ForceCheckout || listInfo.body.d.vti_x005f_listrequirecheckout);
 						resolve(forceCheckoutValue);
 					} else {
 						resolve(forceCheckoutValue);

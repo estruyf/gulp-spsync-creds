@@ -75,6 +75,26 @@ if your folder structure is like this `src/template1/_sp/_catalogs`, and you set
 
 **Important**: this property can also be used to specify the location from where you want to download files.
 
+### libraryPath **New property - v2.3.0**
+Type: `string`
+Default: `""`
+
+The libraryPath property can be used if you want to define a default library path to where you want to upload your files.
+
+By default the plugin uploads the files based on their file location (under your source folder).
+
+```
+src
+|_ _catalogs
+   |_ masterpage
+      |_ your-folder
+         |_ file1.html
+```
+
+So in the above case, `file1.html` will be uploaded to the master page gallery (`_catalogs/masterpage`) in a `your-folder` folder.
+
+When you define the libaryPath to for example: `documents`. The plugin will upload the files to that specific document library with the folder structure. So in this case it will be `documents/_catalogs/masterpage/your-folder/file1.html`.
+
 ### update_metadata
 Type: `Boolean`
 Default: `false`

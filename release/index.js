@@ -96,7 +96,8 @@ function GetOptions(args) {
         file: null,
         content: null,
         cache: false,
-        associatedHtml: true
+        associatedHtml: true,
+        libraryPath: ""
     };
     // Check arguments
     if (!args) {
@@ -125,6 +126,7 @@ function GetOptions(args) {
         options.cache = args.cache || options.cache;
         options.startFolder = args.startFolder || options.startFolder;
         options.associatedHtml = args.associatedHtml || options.associatedHtml;
+        options.libraryPath = args.libraryPath || options.libraryPath;
     }
     return options;
 }
