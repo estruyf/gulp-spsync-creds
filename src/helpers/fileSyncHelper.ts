@@ -9,8 +9,8 @@ import {ISettings, IDigest} from './../utils/ISettings';
 
 import {defer, IDeferred} from './defer';
 import {FolderCreator} from './folderCreator';
-
 import * as fileHelper from './fileHelper';
+
 let fileHlp = new fileHelper.FileHelper();
 let digestVal: IDigest = {
 	digest: null,

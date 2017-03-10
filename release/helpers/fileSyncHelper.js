@@ -4,7 +4,7 @@ var Promise = require('bluebird');
 var gutil = require('gulp-util');
 var moment = require('moment');
 var defer_1 = require('./defer');
-var FolderCreator_1 = require('./FolderCreator');
+var folderCreator_1 = require('./folderCreator');
 var fileHelper = require('./fileHelper');
 var fileHlp = new fileHelper.FileHelper();
 var digestVal = {
@@ -70,7 +70,7 @@ var FileSync = (function () {
         var _this = this;
         // Get the file info
         this.fileInfo = fileHlp.getFileContext(this.config);
-        this.folderCreator = new FolderCreator_1.FolderCreator(this.config, this.spr, digestVal.digest, this.fileInfo);
+        this.folderCreator = new folderCreator_1.FolderCreator(this.config, this.spr, digestVal.digest, this.fileInfo);
         return new Promise(function (resolve, reject) {
             // Check the library settings - this will only be done the first time
             _this.checkLibrarySettings().then(function () {
