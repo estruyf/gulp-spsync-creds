@@ -1,8 +1,8 @@
 "use strict";
-var sprequest = require('sp-request');
-var Promise = require('bluebird');
-var gutil = require('gulp-util');
-var moment = require('moment');
+var sprequest = require("sp-request");
+var Promise = require("bluebird");
+var gutil = require("gulp-util");
+var moment = require("moment");
 var FileDownload = (function () {
     function FileDownload(options) {
         this.digestVal = null;
@@ -18,7 +18,7 @@ var FileDownload = (function () {
         return new Promise(function (resolve, reject) {
             _this.start().then(function (results) {
                 resolve(results);
-            }).catch(function (err) {
+            })["catch"](function (err) {
                 reject(err);
             });
         });
@@ -79,7 +79,7 @@ var FileDownload = (function () {
                 else {
                     resolve(null);
                 }
-            }).catch(function (err) {
+            })["catch"](function (err) {
                 reject(err);
             });
         });
@@ -137,7 +137,7 @@ var FileDownload = (function () {
             _this.spr.get(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.config.startFolder + "')?$expand=" + expand, headers)
                 .then(function (data) {
                 resolve(data);
-            }).catch(function (err) {
+            })["catch"](function (err) {
                 reject(err);
             });
         });
@@ -169,8 +169,7 @@ var FileDownload = (function () {
                         }
                     }
                 }
-            })
-                .catch(function (err) {
+            })["catch"](function (err) {
                 gutil.log(gutil.colors.red("ERROR: Unable to retrieve metadata of file: ", file.name));
                 resolve(null);
             });
@@ -193,8 +192,7 @@ var FileDownload = (function () {
                     }
                     file.content = data.body;
                     resolve(file);
-                })
-                    .catch(function (err) {
+                })["catch"](function (err) {
                     gutil.log(gutil.colors.red("ERROR: Downloading " + file.name + " failed"));
                     resolve(null);
                 });

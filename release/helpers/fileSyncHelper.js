@@ -1,11 +1,11 @@
 "use strict";
-var sprequest = require('sp-request');
-var Promise = require('bluebird');
-var gutil = require('gulp-util');
-var moment = require('moment');
-var defer_1 = require('./defer');
-var folderCreator_1 = require('./folderCreator');
-var fileHelper = require('./fileHelper');
+var sprequest = require("sp-request");
+var Promise = require("bluebird");
+var gutil = require("gulp-util");
+var moment = require("moment");
+var defer_1 = require("./defer");
+var folderCreator_1 = require("./folderCreator");
+var fileHelper = require("./fileHelper");
 var fileHlp = new fileHelper.FileHelper();
 var digestVal = {
     digest: null,
@@ -93,8 +93,7 @@ var FileSync = (function () {
                     .then(function () {
                     // Everything done
                     resolve(null);
-                })
-                    .catch(function (err) {
+                })["catch"](function (err) {
                     reject(err);
                 });
             });
@@ -130,7 +129,7 @@ var FileSync = (function () {
                     else {
                         resolve(forceCheckoutValue);
                     }
-                }).catch(function (err) {
+                })["catch"](function (err) {
                     docLibChecked = true;
                     resolve(forceCheckoutValue);
                 });
@@ -159,8 +158,7 @@ var FileSync = (function () {
                     .then(function (success) {
                     gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(_this.started, 'milliseconds').toString() + 'ms'));
                     resolve(success);
-                })
-                    .catch(function (err) {
+                })["catch"](function (err) {
                     gutil.log(gutil.colors.red("Unable to upload file, it might be checked out to someone"));
                     reject(err);
                 });
@@ -179,7 +177,7 @@ var FileSync = (function () {
                         gutil.log("INFO: File " + _this.fileInfo.filename + " is now checked out and ready for new upload");
                     }
                     resolve(null);
-                }).catch(function () {
+                })["catch"](function () {
                     resolve(null);
                 });
             }
@@ -222,7 +220,7 @@ var FileSync = (function () {
                     _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files('" + _this.fileInfo.filename + "')/listitemallfields", header).then(function (postData) {
                         gutil.log(gutil.colors.green('Metadata updated successfully'), gutil.colors.magenta(moment().diff(_this.started, 'milliseconds').toString() + 'ms'));
                         resolve(postData);
-                    }).catch(function (err) {
+                    })["catch"](function (err) {
                         gutil.log(gutil.colors.red("Unable to update metadata of the file"));
                         reject(err);
                     });
@@ -250,7 +248,7 @@ var FileSync = (function () {
             return this.checkout().then(function () {
                 // Major checkin file
                 return _this.checkin(deferred, 1);
-            }).catch(function (err) {
+            })["catch"](function (err) {
                 gutil.log(gutil.colors.red("Unable to publish file"));
                 deferred.reject(err);
             });
@@ -276,8 +274,7 @@ var FileSync = (function () {
             _this.spr.post(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.fileInfo.library + "')/Files('" + _this.fileInfo.filename + "')/checkOutType", header)
                 .then(function (success) {
                 resolve(success);
-            })
-                .catch(function (err) {
+            })["catch"](function (err) {
                 reject(err);
             });
         });
@@ -316,8 +313,7 @@ var FileSync = (function () {
                             gutil.log('INFO: File is now checked out and ready to be published');
                         }
                         resolve(success);
-                    })
-                        .catch(function (err) {
+                    })["catch"](function (err) {
                         reject(err);
                     });
                 }
@@ -325,8 +321,7 @@ var FileSync = (function () {
                     // File already checked out
                     resolve(data);
                 }
-            })
-                .catch(function (err) {
+            })["catch"](function (err) {
                 reject(err);
             });
         });

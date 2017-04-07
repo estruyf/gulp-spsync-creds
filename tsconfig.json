@@ -1,11 +1,14 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
         "target": "es5",
-        "noImplicitAny": false,
+        "lib": ["es5", "dom"],
+        "module": "commonjs",
+        "jsx": "react",
+        "declaration": false,
         "sourceMap": true,
-        "declaration": true,
-        "outDir": "src"
+        "removeComments": true,
+        "noImplicitAny": false,
+        "experimentalDecorators": true
     },
     "exclude": [
         "node_modules"

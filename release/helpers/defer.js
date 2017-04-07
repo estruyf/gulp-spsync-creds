@@ -1,5 +1,5 @@
 "use strict";
-var Promise = require('bluebird');
+var Promise = require("bluebird");
 function defer() {
     var resolve;
     var reject;

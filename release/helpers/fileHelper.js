@@ -1,6 +1,6 @@
 "use strict";
-var gutil = require('gulp-util');
-var path = require('path');
+var gutil = require("gulp-util");
+var path = require("path");
 var FileHelper = (function () {
     function FileHelper() {
     }

@@ -1,21 +1,21 @@
 var gulp = require('gulp');
 var sourcemaps = require('gulp-sourcemaps');
-var ts = require('gulp-typescript');
+var tsc = require('gulp-typescript');
 var merge = require('merge2');
 
-var tsconfig = require('./tsconfig.json');
+var tsProject = tsc.createProject("tsconfig.json");
 
 gulp.task('default', function () {
-    return gulp.src(['./src/**/*.ts', './typings/index.d.ts'])
-        .pipe(sourcemaps.init())
-        .pipe(ts())
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('src'));
+    var tsResult = tsProject.src()
+                            .pipe(sourcemaps.init())
+                            .pipe(tsProject());
+    return tsResult.js.pipe(sourcemaps.write('.'))
+                      .pipe(gulp.dest('src'));
 });
 
 gulp.task('build', function () {
     return gulp.src(['./src/**/*.ts', './typings/index.d.ts'])
-        .pipe(ts())
+        .pipe(tsc())
         .pipe(gulp.dest('release'));
 });
 

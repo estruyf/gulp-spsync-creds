@@ -1,9 +1,9 @@
 "use strict";
-var through = require('through2');
-var gutil = require('gulp-util');
-var Promise = require('bluebird');
-var fileSyncHelper_1 = require('./helpers/fileSyncHelper');
-var downloadFiles_1 = require('./helpers/downloadFiles');
+var through = require("through2");
+var gutil = require("gulp-util");
+var Promise = require("bluebird");
+var fileSyncHelper_1 = require("./helpers/fileSyncHelper");
+var downloadFiles_1 = require("./helpers/downloadFiles");
 var PLUGIN_NAME = "gulp-spsync-creds";
 function sync(args) {
     var options = GetOptions(args);
@@ -72,7 +72,7 @@ function download(args) {
                     stream.end();
                 });
             }
-        }).catch(function (err) {
+        })["catch"](function (err) {
             if (typeof err.message !== "undefined") {
                 gutil.log(gutil.colors.red("ERROR: " + err.message));
             }

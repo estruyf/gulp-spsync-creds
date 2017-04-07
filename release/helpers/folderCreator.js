@@ -1,10 +1,10 @@
 "use strict";
-var Promise = require('bluebird');
-var gutil = require('gulp-util');
-var path = require('path');
-var util = require('util');
-var defer_1 = require('./defer');
-var fileHelper = require('./fileHelper');
+var Promise = require("bluebird");
+var gutil = require("gulp-util");
+var path = require("path");
+var util = require("util");
+var defer_1 = require("./defer");
+var fileHelper = require("./fileHelper");
 var fileHlp = new fileHelper.FileHelper();
 var processedLibs = [];
 var FolderCreator = (function () {
@@ -59,7 +59,7 @@ var FolderCreator = (function () {
                 if (pathArray.length > 0) {
                     return _this.createPathRecursive(pathArray).then(function () {
                         resolve(null);
-                    }).catch(function (err) {
+                    })["catch"](function (err) {
                         reject(err);
                     });
                 }
@@ -112,8 +112,7 @@ var FolderCreator = (function () {
                 // Temp cache the processed folder
                 _this.cacheLocation(folderName);
                 resolve(success);
-            })
-                .catch(function (err) {
+            })["catch"](function (err) {
                 gutil.log("INFO: Folder '" + folderName + "' doesn't exist and will be created");
                 resolve(err);
             });
@@ -153,8 +152,7 @@ var FolderCreator = (function () {
                     gutil.log('INFO: Folder created:', pathArray[0]);
                 }
                 return _this.createPathRecursive(pathArray.slice(1, pathArray.length), deferred);
-            })
-                .catch(function (err) {
+            })["catch"](function (err) {
                 gutil.log(gutil.colors.red("ERROR: " + err));
                 deferred.reject(err);
             });
