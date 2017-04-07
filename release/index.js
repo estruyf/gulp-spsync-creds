@@ -72,6 +72,13 @@ function download(args) {
                     stream.end();
                 });
             }
+        }).catch(function (err) {
+            if (typeof err.message !== "undefined") {
+                gutil.log(gutil.colors.red("ERROR: " + err.message));
+            }
+            else {
+                gutil.log(gutil.colors.red("ERROR: " + JSON.stringify(err)));
+            }
         });
     }
     else {

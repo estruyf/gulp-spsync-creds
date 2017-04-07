@@ -87,7 +87,13 @@ export function download (args: ISettings) {
 					stream.end();
 				});
 			}
-		});
+		}).catch(err => {
+            if (typeof err.message !== "undefined") {
+                gutil.log(gutil.colors.red(`ERROR: ${err.message}`));
+            } else {
+                gutil.log(gutil.colors.red(`ERROR: ${JSON.stringify(err)}`));
+            }
+        });
 	} else {
 		gutil.log(gutil.colors.red("Please specify the startFolder"));
 		// End the steam

@@ -18,6 +18,8 @@ var FileDownload = (function () {
         return new Promise(function (resolve, reject) {
             _this.start().then(function (results) {
                 resolve(results);
+            }).catch(function (err) {
+                reject(err);
             });
         });
     };
@@ -77,6 +79,8 @@ var FileDownload = (function () {
                 else {
                     resolve(null);
                 }
+            }).catch(function (err) {
+                reject(err);
             });
         });
     };
@@ -133,9 +137,8 @@ var FileDownload = (function () {
             _this.spr.get(_this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + _this.config.startFolder + "')?$expand=" + expand, headers)
                 .then(function (data) {
                 resolve(data);
-            })
-                .catch(function (err) {
-                resolve(null);
+            }).catch(function (err) {
+                reject(err);
             });
         });
     };

@@ -29,6 +29,8 @@ export class FileDownload {
 		return new Promise<any>((resolve, reject) => {
 			this.start().then(results => {
                 resolve(results);
+            }).catch(err => {
+                reject(err);
             });
 		});
     }
@@ -87,6 +89,8 @@ export class FileDownload {
                 } else {
                     resolve(null);
                 }
+            }).catch(err => {
+                reject(err);
             });
         });
     }
@@ -150,9 +154,8 @@ export class FileDownload {
             )
             .then(data => {
                 resolve(data);
-            })
-            .catch(err => {
-                resolve(null);
+            }).catch(err => {
+                reject(err);
             });
         });
     };

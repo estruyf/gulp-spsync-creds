@@ -5,3 +5,5 @@ src/**/*.js
 tests/local-test.js
 tests/download-test.js
 tests/downloads
+yarn.lock
+.vscode
