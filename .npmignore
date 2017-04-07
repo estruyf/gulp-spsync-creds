@@ -7,3 +7,4 @@ gulpfile.js
 typings.json
 tsconfig.json
 *.tgz
+yarn.lock
