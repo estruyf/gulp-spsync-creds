@@ -2,37 +2,37 @@ import * as through from 'through2';
 import * as gutil from 'gulp-util';
 import * as Promise from 'bluebird';
 
-import {ISettings} from './utils/ISettings';
-import {IFileDownload} from './utils/IFileInfo';
+import { ISettings } from './utils/ISettings';
+import { IFileDownload } from './utils/IFileInfo';
 
-import {FileSync} from './helpers/fileSyncHelper';
-import {FileDownload} from './helpers/downloadFiles';
+import { FileSync } from './helpers/fileSyncHelper';
+import { FileDownload } from './helpers/downloadFiles';
 
 let PLUGIN_NAME = "gulp-spsync-creds";
 
-export function sync (args: ISettings) {
-    let options = GetOptions(args);
+export function sync(args: ISettings) {
+	let options = GetOptions(args);
 
 	let fileSync = new FileSync(options);
 
-    return through.obj(function(file, enc, cb) {		
+	return through.obj(function (file, enc, cb) {
 		var fileDone = function (parameter) {
-			cb(null, file);
+			cb();
 		}
-		
+
 		if (file.isNull()) {
-			cb(null, file)
+			cb()
 			return;
 		}
-		if (file.isStream()) { 
- 			cb(new gutil.PluginError(PLUGIN_NAME, 'Streaming not supported')); 
-			return; 
-		} 
+		if (file.isStream()) {
+			cb(new gutil.PluginError(PLUGIN_NAME, 'Streaming not supported'));
+			return;
+		}
 
-		var content = file.contents; 
-        if (file.contents == null || file.contents.length === 0) { 
-             content = ''; 
-        }
+		var content = file.contents;
+		if (file.contents == null || file.contents.length === 0) {
+			content = '';
+		}
 
 		// Temp store file in options
 		options.file = file;
@@ -41,16 +41,16 @@ export function sync (args: ISettings) {
 		gutil.log('Uploading ' + file.relative);
 
 		fileSync.init().then(fileDone);
-	},function(cb){
-		if(options.verbose){
-			gutil.log("And we're done...")	
-		}		
+	}, function (cb) {
+		if (options.verbose) {
+			gutil.log("And we're done...")
+		}
 		cb();
 	})
 }
 
-export function download (args: ISettings) {
-	var stream = through.obj(function(file, enc, callback) {
+export function download(args: ISettings) {
+	var stream = through.obj(function (file, enc, callback) {
 		this.push(file);
 		return callback();
 	});
@@ -63,7 +63,7 @@ export function download (args: ISettings) {
 				gutil.log(gutil.colors.yellow("No files found on the specified startFolder path"));
 			} else {
 				gutil.log(gutil.colors.green("Retrieved all files from the folder."));
-				
+
 				// Start retrieving the file content
 				let proms = [];
 				files.forEach(file => {
@@ -88,12 +88,12 @@ export function download (args: ISettings) {
 				});
 			}
 		}).catch(err => {
-            if (typeof err.message !== "undefined") {
-                gutil.log(gutil.colors.red(`ERROR: ${err.message}`));
-            } else {
-                gutil.log(gutil.colors.red(`ERROR: ${JSON.stringify(err)}`));
-            }
-        });
+			if (typeof err.message !== "undefined") {
+				gutil.log(gutil.colors.red(`ERROR: ${err.message}`));
+			} else {
+				gutil.log(gutil.colors.red(`ERROR: ${JSON.stringify(err)}`));
+			}
+		});
 	} else {
 		gutil.log(gutil.colors.red("Please specify the startFolder"));
 		// End the steam
@@ -103,13 +103,13 @@ export function download (args: ISettings) {
 	return stream;
 }
 
-function GetOptions (args: ISettings) {
+function GetOptions(args: ISettings) {
 	// Default options
-    let options: ISettings = {
+	let options: ISettings = {
 		username: null,
 		password: null,
 		site: "",
-        startFolder: "",
+		startFolder: "",
 		verbose: false,
 		update_metadata: false,
 		files_metadata: [],
@@ -121,22 +121,22 @@ function GetOptions (args: ISettings) {
 		libraryPath: ""
 	}
 
-    // Check arguments
-    if(!args){
+	// Check arguments
+	if (!args) {
 		throw "options required"
 	}
-	if(!args.username){
+	if (!args.username) {
 		throw "The username parameter is required"
 	}
-	if(!args.password){
+	if (!args.password) {
 		throw "The password parameter is required"
 	}
-	if(!args.site){
+	if (!args.site) {
 		throw "The site options parameter is required"
 	}
 
-    // Merge arguments with the default options
-    if (args) {
+	// Merge arguments with the default options
+	if (args) {
 		// Required properties
 		options.username = args.username;
 		options.password = args.password;

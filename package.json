@@ -1,6 +1,6 @@
 {
   "name": "gulp-spsync-creds",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Gulp plugin that syncs with a library in SharePoint Online and on-premises",
   "main": "./release/index.js",
   "scripts": {
@@ -28,12 +28,10 @@
     "url": "https://github.com/estruyf/gulp-spsync-creds/issues"
   },
   "homepage": "https://github.com/estruyf/gulp-spsync-creds",
-  "maintainers": [
-    {
-      "name": "Elio Struyf",
-      "email": "info@estruyf.be"
-    }
-  ],
+  "maintainers": [{
+    "name": "Elio Struyf",
+    "email": "info@estruyf.be"
+  }],
   "dependencies": {
     "bluebird": "3.5.0",
     "gulp-util": "3.0.8",

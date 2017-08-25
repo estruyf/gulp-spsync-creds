@@ -10,10 +10,10 @@ function sync(args) {
     var fileSync = new fileSyncHelper_1.FileSync(options);
     return through.obj(function (file, enc, cb) {
         var fileDone = function (parameter) {
-            cb(null, file);
+            cb();
         };
         if (file.isNull()) {
-            cb(null, file);
+            cb();
             return;
         }
         if (file.isStream()) {
