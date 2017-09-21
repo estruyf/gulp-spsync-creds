@@ -4,11 +4,11 @@ import * as gutil from 'gulp-util';
 import * as path from 'path';
 import * as moment from 'moment';
 
-import {IFileInfo} from './../utils/IFileInfo';
-import {ISettings, IDigest} from './../utils/ISettings';
+import { IFileInfo } from './../utils/IFileInfo';
+import { ISettings, IDigest } from './../utils/ISettings';
 
-import {defer, IDeferred} from './defer';
-import {FolderCreator} from './folderCreator';
+import { defer, IDeferred } from './defer';
+import { FolderCreator } from './folderCreator';
 import * as fileHelper from './fileHelper';
 
 let fileHlp = new fileHelper.FileHelper();
@@ -21,21 +21,21 @@ let forceCheckoutValue: boolean = false; // Default master page gallery setting
 let docLibChecked: boolean = false;
 
 export class FileSync {
-    config: ISettings;
-    spr: sprequest.ISPRequest;
+	config: ISettings;
+	spr: sprequest.ISPRequest;
 	folderCreator: FolderCreator;
 	fileInfo: IFileInfo;
 	started: moment.Moment;
 
-    constructor(options: ISettings) {
-        this.config = options;
-        this.spr = sprequest.create({ username: options.username, password: options.password });
-    }
+	constructor(options: ISettings) {
+		this.config = options;
+		this.spr = sprequest.create({ username: options.username, password: options.password });
+	}
 
 	/*
 	 * Initialize file upload
 	 */
-    public init(): Promise<any> {
+	public init(): Promise<any> {
 		this.started = moment();
 		return new Promise<any>((resolve, reject) => {
 			if (!this.CheckDigestLifespan() || this.config.site !== digestVal.url) {
@@ -49,6 +49,13 @@ export class FileSync {
 					}
 					this.start().then(() => {
 						resolve(null);
+					}).catch(error => {
+						if (typeof error === "string") {
+							gutil.log(gutil.colors.red(`ERROR: ${error}`));
+						} else {
+							gutil.log(gutil.colors.red('ERROR:'), JSON.stringify(error));
+						}
+						resolve(null);
 					});
 				});
 			} else {
@@ -57,10 +64,17 @@ export class FileSync {
 				}
 				this.start().then(() => {
 					resolve(null);
+				}).catch(error => {
+					if (typeof error === "string") {
+						gutil.log(gutil.colors.red(`ERROR: ${error}`));
+					} else {
+						gutil.log(gutil.colors.red('ERROR:'), JSON.stringify(error));
+					}
+					resolve(null);
 				});
 			}
 		});
-    }
+	}
 
 	/*
 	 * Check the lifespan of the digest value
@@ -109,7 +123,7 @@ export class FileSync {
 					.catch((err) => {
 						reject(err);
 					}
-				);
+					);
 			});
 		});
 	}
@@ -119,10 +133,10 @@ export class FileSync {
 	 */
 	private checkLibrarySettings(): Promise<any> {
 		let headers = {
-			"headers":{
+			"headers": {
 				"X-RequestDigest": digestVal.digest,
-				"content-type":"application/json;odata=verbose",
-				"Accept":"application/json;odata=verbose"
+				"content-type": "application/json;odata=verbose",
+				"Accept": "application/json;odata=verbose"
 			}
 		};
 
@@ -160,7 +174,7 @@ export class FileSync {
 	 */
 	private upload(): Promise<any> {
 		let headers = {
-			"headers":{
+			"headers": {
 				"X-RequestDigest": digestVal.digest
 			},
 			"body": this.config.content,
@@ -170,9 +184,9 @@ export class FileSync {
 		return new Promise<any>((resolve, reject) => {
 			this.checkoutBeforeUpload().then(() => {
 				return this.spr.post(
-						this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files/add(url='" + this.fileInfo.filename + "',overwrite=true)",
-						headers
-					)
+					this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Files/add(url='" + this.fileInfo.filename + "',overwrite=true)",
+					headers
+				)
 					.then(success => {
 						gutil.log(gutil.colors.green('Upload successful'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
 						resolve(success);
@@ -181,7 +195,7 @@ export class FileSync {
 						gutil.log(gutil.colors.red("Unable to upload file, it might be checked out to someone"));
 						reject(err);
 					});
-				});
+			});
 		});
 	}
 
@@ -226,9 +240,9 @@ export class FileSync {
 					// Get the first metadata config for of the current file
 					let metadata = fileMetadata[0].metadata;
 					let header = {
-						headers:{
-							"content-type":"application/json;odata=verbose",
-							"Accept":"application/json;odata=verbose",
+						headers: {
+							"content-type": "application/json;odata=verbose",
+							"Accept": "application/json;odata=verbose",
 							"X-HTTP-Method": "MERGE",
 							"If-Match": "*",
 							"X-RequestDigest": digestVal.digest
@@ -254,7 +268,7 @@ export class FileSync {
 				resolve(null);
 			}
 		});
-    }
+	}
 
 	/*
 	 * Publish the file
@@ -285,22 +299,22 @@ export class FileSync {
 	checkouttype(): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			let header = {
-				"headers":{
-					"content-type":"application/json;odata=verbose",
+				"headers": {
+					"content-type": "application/json;odata=verbose",
 					"X-RequestDigest": digestVal.digest
 				}
 			};
 			this.spr.post(
-					this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files('" + this.fileInfo.filename + "')/checkOutType",
-					header
-				)
+				this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Files('" + this.fileInfo.filename + "')/checkOutType",
+				header
+			)
 				.then(success => {
 					resolve(success);
 				})
 				.catch(err => {
 					reject(err);
 				}
-			);
+				);
 		});
 	}
 
@@ -328,15 +342,15 @@ export class FileSync {
 					if (data.body.d.CheckOutType !== 0) {
 						// File needs to be checked out before publish
 						let header = {
-							"headers":{
-								"content-type":"application/json;odata=verbose",
+							"headers": {
+								"content-type": "application/json;odata=verbose",
 								"X-RequestDigest": digestVal.digest
 							}
 						};
 						return this.spr.post(
-								this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files('" + this.fileInfo.filename + "')/CheckOut()",
-								header
-							)
+							this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Files('" + this.fileInfo.filename + "')/CheckOut()",
+							header
+						)
 							.then(success => {
 								if (this.config.verbose) {
 									gutil.log('INFO: File is now checked out and ready to be published');
@@ -346,7 +360,7 @@ export class FileSync {
 							.catch(err => {
 								reject(err);
 							}
-						);
+							);
 					} else {
 						// File already checked out
 						resolve(data);
@@ -368,19 +382,19 @@ export class FileSync {
 			type = 0;
 		}
 		let header = {
-			"headers":{
-				"content-type":"application/json;odata=verbose",
+			"headers": {
+				"content-type": "application/json;odata=verbose",
 				"X-RequestDigest": digestVal.digest
 			}
 		};
 		this.spr.post(
-				this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library +"')/Files('" + this.fileInfo.filename + "')/CheckIn(comment='Checked in via GULP', checkintype=" + type + ")",
-				header
-			).then(result => {
-				gutil.log(gutil.colors.green('Published file'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
-				deferred.resolve(result);
-			}
-		);
+			this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.fileInfo.library + "')/Files('" + this.fileInfo.filename + "')/CheckIn(comment='Checked in via GULP', checkintype=" + type + ")",
+			header
+		).then(result => {
+			gutil.log(gutil.colors.green('Published file'), gutil.colors.magenta(moment().diff(this.started, 'milliseconds').toString() + 'ms'));
+			deferred.resolve(result);
+		}
+			);
 
 		return deferred.promise;
 	}
