@@ -37,6 +37,14 @@ var FileSync = (function () {
                     }
                     _this.start().then(function () {
                         resolve(null);
+                    })["catch"](function (error) {
+                        if (typeof error === "string") {
+                            gutil.log(gutil.colors.red("ERROR: " + error));
+                        }
+                        else {
+                            gutil.log(gutil.colors.red('ERROR:'), JSON.stringify(error));
+                        }
+                        resolve(null);
                     });
                 });
             }
@@ -45,6 +53,14 @@ var FileSync = (function () {
                     gutil.log('INFO: Use cached digest value');
                 }
                 _this.start().then(function () {
+                    resolve(null);
+                })["catch"](function (error) {
+                    if (typeof error === "string") {
+                        gutil.log(gutil.colors.red("ERROR: " + error));
+                    }
+                    else {
+                        gutil.log(gutil.colors.red('ERROR:'), JSON.stringify(error));
+                    }
                     resolve(null);
                 });
             }
