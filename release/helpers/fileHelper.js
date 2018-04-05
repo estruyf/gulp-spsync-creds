@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var gutil = require("gulp-util");
 var path = require("path");
 var FileHelper = (function () {

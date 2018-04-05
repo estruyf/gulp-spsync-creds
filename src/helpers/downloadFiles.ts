@@ -1,5 +1,4 @@
 import * as sprequest from 'sp-request';
-import * as Promise from 'bluebird';
 import * as gutil from 'gulp-util';
 import * as path from 'path';
 import * as moment from 'moment';
@@ -148,10 +147,9 @@ export class FileDownload {
 
             // Thanks to Marc D Anderson for the idea: 
             /// http://sympmarc.com/2016/04/23/get-all-sharepoint-document-library-files-and-folders-at-a-serverrelativeurl-in-one-rest-call/
-            this.spr.get(
-                this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.config.startFolder + "')?$expand=" + expand,
+            this.spr.get(this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.config.startFolder + "')?$expand=" + expand, {
                 headers
-            )
+            })
             .then(data => {
                 resolve(data);
             }).catch(err => {
@@ -171,10 +169,9 @@ export class FileDownload {
             };
 
             let restUrl = this.config.site + "/_api/web/GetFolderByServerRelativeUrl('" + this.config.startFolder + '/' + file.name + "')/ListItemAllFields?$select=HtmlDesignAssociated";
-            this.spr.get(
-                restUrl,
+            this.spr.get(restUrl, {
                 headers
-            )
+            })
             .then(data => {
                 if (data.body !== null) {
                     if (typeof data.body.d !== 'undefined') {

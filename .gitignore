@@ -7,3 +7,4 @@ tests/download-test.js
 tests/downloads
 yarn.lock
 .vscode
+.DS_Store

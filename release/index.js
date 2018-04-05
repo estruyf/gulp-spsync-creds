@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var through = require("through2");
 var gutil = require("gulp-util");
 var Promise = require("bluebird");
@@ -24,7 +25,6 @@ function sync(args) {
         if (file.contents == null || file.contents.length === 0) {
             content = '';
         }
-        // Temp store file in options
         options.file = file;
         options.content = file.contents;
         gutil.log('Uploading ' + file.relative);
@@ -51,7 +51,6 @@ function download(args) {
             }
             else {
                 gutil.log(gutil.colors.green("Retrieved all files from the folder."));
-                // Start retrieving the file content
                 var proms_1 = [];
                 files.forEach(function (file) {
                     proms_1.push(fileDownload_1.download(file).then(function (uFile) {
@@ -68,11 +67,10 @@ function download(args) {
                     if (options_1.verbose) {
                         gutil.log("And we're done...");
                     }
-                    // End the file stream
                     stream.end();
                 });
             }
-        })["catch"](function (err) {
+        }).catch(function (err) {
             if (typeof err.message !== "undefined") {
                 gutil.log(gutil.colors.red("ERROR: " + err.message));
             }
@@ -83,14 +81,12 @@ function download(args) {
     }
     else {
         gutil.log(gutil.colors.red("Please specify the startFolder"));
-        // End the steam
         stream.end();
     }
     return stream;
 }
 exports.download = download;
 function GetOptions(args) {
-    // Default options
     var options = {
         username: null,
         password: null,
@@ -106,7 +102,6 @@ function GetOptions(args) {
         associatedHtml: true,
         libraryPath: ""
     };
-    // Check arguments
     if (!args) {
         throw "options required";
     }
@@ -119,13 +114,10 @@ function GetOptions(args) {
     if (!args.site) {
         throw "The site options parameter is required";
     }
-    // Merge arguments with the default options
     if (args) {
-        // Required properties
         options.username = args.username;
         options.password = args.password;
         options.site = args.site;
-        // Default properties or configured via the gulp script
         options.verbose = args.verbose || options.verbose;
         options.update_metadata = args.update_metadata || options.update_metadata;
         options.files_metadata = args.files_metadata || options.files_metadata;
